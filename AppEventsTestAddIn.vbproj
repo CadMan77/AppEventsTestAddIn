@@ -99,13 +99,7 @@
     <Compile Include="StandardAddInServer.vb" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AppEventsTestAddIn.X.manifest" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Autodesk.AppEventsTestAddIn.Inventor.addin" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="My Project\" />

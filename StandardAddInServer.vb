@@ -11,32 +11,56 @@ Namespace AppEventsTestAddIn
 
         'Application events object
         Private WithEvents oAppEvents As ApplicationEvents
+        Private WithEvents oDocEvents As DocumentEvents
 
         Private WithEvents m_uiEvents As UserInterfaceEvents
         'Private WithEvents m_sampleButton As ButtonDefinition
 
-        Friend myForm As Form1
 #Region "ApplicationAddInServer Members"
+
         Private Sub oAppEvents_OnActivateDocument(ByVal DocumentObject As Document, ByVal BeforeOrAfter As EventTimingEnum, ByVal Context As NameValueMap, ByRef HandlingCode As HandlingCodeEnum) Handles oAppEvents.OnActivateDocument
 
             If BeforeOrAfter = EventTimingEnum.kAfter Then
 
-                'MessageBox.Show("AFTER!")
-
-                myForm = New Form1
-                myForm.Show(New WindowWrapper(g_inventorApplication.MainFrameHWND))
+                Trace.WriteLine(DocumentObject.DisplayName & "  ActivateDoc-AFTER" & "  AppEventsTestAddIn")
+                'MessageBox.Show(DocumentObject.DisplayName, "ActivateDoc-AFTER")
+                g_myForm = New Form1 With {
+                    .Text = DocumentObject.DisplayName
+                }
+                g_myForm.Show(New WindowWrapper(g_inventorApplication.MainFrameHWND))
 
             ElseIf BeforeOrAfter = EventTimingEnum.kBefore Then
 
-                'MessageBox.Show("BEFORE!")
+                Trace.WriteLine(DocumentObject.DisplayName & "  ActivateDoc-BEFORE" & "  AppEventsTestAddIn")
+                'MessageBox.Show(DocumentObject.DisplayName, "ActivateDoc-BEFORE")
+                'If Not g_myForm Is Nothing Then g_myForm.Close()
 
-                Try
-                    myForm.Close()
-                Catch ex As Exception
 
-                End Try
             End If
         End Sub
+
+        Private Sub oAppEvents_OnDeactivateDocument(ByVal DocumentObject As Document, ByVal BeforeOrAfter As EventTimingEnum, ByVal Context As NameValueMap, ByRef HandlingCode As HandlingCodeEnum) Handles oAppEvents.OnDeactivateDocument
+            If BeforeOrAfter = EventTimingEnum.kBefore Then
+                Trace.WriteLine(DocumentObject.DisplayName & "  DeactivateDoc-BEFORE" & "  AppEventsTestAddIn")
+                'MessageBox.Show(DocumentObject.DisplayName, "DeactivateDoc-BEFORE")
+
+                If Not g_myForm Is Nothing Then g_myForm.Close()
+            ElseIf BeforeOrAfter = EventTimingEnum.kAfter Then
+                Trace.WriteLine(DocumentObject.DisplayName & "  DeactivateDoc-AFTER" & "  AppEventsTestAddIn")
+                'MessageBox.Show(DocumentObject.DisplayName, "DeactivateDoc-AFTER")
+            End If
+        End Sub
+
+        Private Sub oDocEvents_OnActivate(ByVal BeforeOrAfter As Inventor.EventTimingEnum, ByVal Context As Inventor.NameValueMap, ByRef HandlingCode As Inventor.HandlingCodeEnum) Handles oDocEvents.OnActivate
+            If BeforeOrAfter = Inventor.EventTimingEnum.kBefore Then
+                Trace.WriteLine("Activate-BEFORE" & "  AppEventsTestAddIn")
+                'MessageBox.Show("Activate-BEFORE")
+            ElseIf BeforeOrAfter = Inventor.EventTimingEnum.kAfter Then
+                Trace.WriteLine("Activate-AFTER" & "  AppEventsTestAddIn")
+                'MessageBox.Show("Activate-AFTER")
+            End If
+        End Sub
+
 
         ' This method is called by Inventor when it loads the AddIn. The AddInSiteObject provides access  
         ' to the Inventor Application object. The FirstTime flag indicates if the AddIn is loaded for
@@ -49,6 +73,7 @@ Namespace AppEventsTestAddIn
             m_uiEvents = g_inventorApplication.UserInterfaceManager.UserInterfaceEvents
 
             oAppEvents = g_inventorApplication.ApplicationEvents()
+            'oDocEvents = g_inventorApplication.DocumentEvents()
 
             ' TODO: Add button definitions.
 
@@ -133,6 +158,7 @@ End Namespace
 Public Module Globals
     ' Inventor application object.
     Public g_inventorApplication As Inventor.Application
+    Friend g_myForm As Form1
 
 #Region "Function to get the add-in client ID."
     ' This function uses reflection to get the GuidAttribute associated with the add-in.
@@ -155,7 +181,7 @@ Public Module Globals
     ' This is primarily used for parenting a dialog to the Inventor window.
     '
     ' For example:
-    ' myForm.Show(New WindowWrapper(g_inventorApplication.MainFrameHWND))
+    ' g_myForm.Show(New WindowWrapper(g_inventorApplication.MainFrameHWND))
     '
     Public Class WindowWrapper
         Implements System.Windows.Forms.IWin32Window
